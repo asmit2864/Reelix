@@ -292,17 +292,22 @@ async def upload_youtube(page, config: dict, video_path: str):
                             
                     if add_btn and await add_btn.is_visible():
                         await add_btn.click()
-                        print("[YT] ⏳ Waiting 4 seconds for related videos dialog to load...")
-                        await asyncio.sleep(4)
+                        print("[YT] ⏳ Waiting for related videos dialog to load...")
                         
-                        # Try a broad selector for videos inside the popup dialog
-                        first_video = page.locator('tp-yt-paper-dialog ytcp-entity-card, tp-yt-paper-dialog ytcp-video-row, tp-yt-paper-dialog #video-title, ytcp-video-pick-dialog ytcp-entity-card, tp-yt-paper-dialog ytd-video-renderer, tp-yt-paper-dialog ytd-compact-video-renderer').first
+                        # Broad selector for videos inside the picker popup dialog
+                        video_card_selector = 'ytcp-video-pick-dialog ytcp-entity-card, tp-yt-paper-dialog ytcp-video-row, tp-yt-paper-dialog #video-title, ytcp-video-pick-dialog ytcp-video-row, #video-list ytcp-video-row'
                         
-                        if await first_video.is_visible():
+                        try:
+                            # Wait up to 15 seconds for the list to populate
+                            await page.locator(video_card_selector).first.wait_for(state='visible', timeout=15000)
+                            await asyncio.sleep(1) # Tiny buffer for hydration
+                            
+                            first_video = page.locator(video_card_selector).first
                             await first_video.click()
                             print("[YT] ✅ Related video selected!")
-                        else:
-                            print("[YT] ⚠️  Dialog opened but could not find any video to select. (Is the list empty?)")
+                        except Exception as e:
+                            print(f"[YT] ⚠️  Could not find any video to select in the dialog (timed out or empty list).")
+                        
                         await asyncio.sleep(1.5)
                     else:
                         print("[YT] ⚠️  'Add related video' text found, but could not locate the 'Add' button nearby.")
@@ -519,9 +524,15 @@ async def main():
         user_data_dir = str(Path(__file__).parent / 'browser_profile')
         os.makedirs(user_data_dir, exist_ok=True)
 
-        # Check for Brave Browser
+        # Check for installed browsers (Brave, then Chrome)
         brave_path = r"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
-        exec_path = brave_path if os.path.exists(brave_path) else None
+        chrome_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+        
+        exec_path = None
+        if os.path.exists(brave_path):
+            exec_path = brave_path
+        elif os.path.exists(chrome_path):
+            exec_path = chrome_path
 
         context = await p.chromium.launch_persistent_context(
             user_data_dir,
@@ -535,23 +546,14 @@ async def main():
             no_viewport=True,
         )
 
-        page_yt = None
-        page_ig = None
+        # Get the initial page automatically opened by the context
+        pages = context.pages
+        initial_page = pages[0] if pages else await context.new_page()
 
-        # Pre-flight Authentication Checks (Sequential to allow user to solve them without overlapping prompts)
-        if do_youtube:
-            page_yt = await context.new_page()
-            try:
-                await page_yt.goto('https://studio.youtube.com', wait_until='domcontentloaded')
-            except Exception:
-                pass
-            await asyncio.sleep(3)
-            if 'accounts.google.com' in page_yt.url or 'signin' in page_yt.url:
-                print("[SYS] ⚠️  You need to log into YouTube first.")
-                input("   Press ENTER here after logging in on the browser window...")
-
+        # Pre-flight Authentication Checks
+        # Open Instagram first (Tab 1)
         if do_instagram:
-            page_ig = await context.new_page()
+            page_ig = initial_page
             try:
                 await page_ig.goto('https://www.instagram.com', wait_until='domcontentloaded')
             except Exception:
@@ -560,6 +562,27 @@ async def main():
             if 'accounts.instagram.com' in page_ig.url or '/login' in page_ig.url or '/challenge' in page_ig.url or 'auth_platform' in page_ig.url:
                 print("[SYS] ⚠️  Instagram requires your attention (Login or Security Challenge).")
                 input("   Press ENTER here to continue after you are fully logged in and on the feed...")
+
+        # Open YouTube second (Tab 2)
+        if do_youtube:
+            # If instagram already used the first page, open a new one
+            if page_ig:
+                page_yt = await context.new_page()
+            else:
+                page_yt = initial_page
+                
+            try:
+                await page_yt.goto('https://studio.youtube.com', wait_until='domcontentloaded')
+            except Exception:
+                pass
+            await asyncio.sleep(3)
+            if 'accounts.google.com' in page_yt.url or 'signin' in page_yt.url:
+                print("[SYS] ⚠️  You need to log into YouTube first.")
+                input("   Press ENTER here after logging in on the browser window...")
+            
+            # Explicitly bring YouTube to front so it doesn't get throttled
+            await page_yt.bring_to_front()
+            print("[SYS] 🎯 YouTube tab focused for maximum performance.")
 
         # Launch parallel upload tasks
         tasks = []

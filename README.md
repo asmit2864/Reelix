@@ -55,9 +55,6 @@ The first time you upload to each platform, a browser will open and ask you to l
 
 ## ⚠️ Notes
 
-- Keep the video file in the **same folder** as the scripts for easiest use
-- YouTube playlist dropdown is filled automatically from your account
-- Instagram Reels upload via web can sometimes be slow — be patient
 - If a platform updates their UI, selectors in `uploader.py` may need small tweaks
 - This uses your real browser login — no API keys or tokens needed
 
@@ -69,7 +66,7 @@ The first time you upload to each platform, a browser will open and ask you to l
 → Make sure `server.py` is running (START.bat opens it automatically)
 
 **"Video file not found"**
-→ Put your video in the same folder as the scripts, or use the full path
+→ Ensure the video file hasn't been moved or deleted since you selected it
 
 **Browser opens but gets stuck**
 → YouTube/Instagram may have updated their UI. Open an issue or tweak selectors in `uploader.py`

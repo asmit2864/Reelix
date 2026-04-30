@@ -140,16 +140,67 @@
     box-shadow: none;
   }
 
+  .btn-success {
+    background: var(--success) !important;
+    box-shadow: 0 4px 20px rgba(34, 209, 122, 0.3) !important;
+    opacity: 1 !important;
+    pointer-events: none;
+    cursor: default;
+  }
+
+  .loader {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
   /* Tabs */
+  .tabs-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
   .tabs {
     display: flex;
     gap: 4px;
-    margin-bottom: 28px;
     padding: 4px;
     background: var(--surface2);
     border-radius: 100px;
     width: fit-content;
     border: 1px solid var(--border);
+  }
+
+  .upload-hint {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: rgba(255, 59, 59, 0.08);
+    border: 1px solid rgba(255, 59, 59, 0.2);
+    border-radius: 12px;
+    color: #FF5555;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    animation: fadeInRight 0.5s ease both;
+  }
+
+  @keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
   }
 
   .tab {
@@ -861,7 +912,7 @@
     font-weight: 500;
     max-height: 120px;
     overflow-y: auto;
-    background: #fff;
+    background: var(--surface2);
     color: var(--text);
   }
 
@@ -903,7 +954,7 @@
     font-size: 12px;
     line-height: 1.7;
     overflow-y: auto;
-    background: #fff;
+    background: var(--surface);
     color: var(--text-muted);
   }
 
@@ -980,15 +1031,21 @@
     </div>
   </header>
 
-  <div class="tabs">
-    <button class="tab active" data-tab="upload">
-      <i data-lucide="upload-cloud" style="width: 16px; height: 16px;"></i>
-      Upload
-    </button>
-    <button class="tab" data-tab="logs">
-      <i data-lucide="activity" style="width: 16px; height: 16px;"></i>
-      Live Logs
-    </button>
+  <div class="tabs-row">
+    <div class="tabs">
+      <button class="tab active" data-tab="upload">
+        <i data-lucide="upload-cloud" style="width: 16px; height: 16px;"></i>
+        Upload
+      </button>
+      <button class="tab" data-tab="logs">
+        <i data-lucide="activity" style="width: 16px; height: 16px;"></i>
+        Live Logs
+      </button>
+    </div>
+    <div id="uploadHint" class="upload-hint">
+      <i data-lucide="zap" style="width: 14px; height: 14px; flex-shrink: 0;"></i>
+      <span>Keep the newly openedbrowser window visible (especially YouTube) for faster uploads</span>
+    </div>
   </div>
 
   <div id="uploadTabContent" class="tab-content active">
@@ -1101,7 +1158,7 @@
     </div>
 
   <!-- Upload Button -->
-  <button class="submit-btn" id="uploadBtn" type="button">
+  <button class="submit-btn" id="uploadBtnBottom" type="button">
     🚀 Start Upload Automation
   </button>
 
@@ -1126,14 +1183,14 @@
         <div class="log-column">
           <div class="log-column-header yt">
             <i data-lucide="play" style="width: 16px; height: 16px;"></i>
-            YouTube Stream
+            YouTube Logs
           </div>
           <div class="log-column-body" id="ytLog"></div>
         </div>
         <div class="log-column">
           <div class="log-column-header ig">
             <i data-lucide="camera" style="width: 16px; height: 16px;"></i>
-            Instagram Stream
+            Instagram Logs
           </div>
           <div class="log-column-body" id="igLog"></div>
         </div>
@@ -1266,7 +1323,9 @@ function log(msg, type = '') {
 }
 
 // ─── Upload button ───────────────────────────────────────────────
-document.getElementById('uploadBtn').addEventListener('click', () => {
+const uploadBtn = document.getElementById('uploadBtn');
+
+uploadBtn.addEventListener('click', () => {
   if (!selectedFilePath) {
     alert('Please select a video file first.');
     return;
@@ -1295,6 +1354,12 @@ document.getElementById('uploadBtn').addEventListener('click', () => {
       caption: document.getElementById('igCaption').value
     }
   };
+
+  const originalBtnContent = uploadBtn.innerHTML;
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = '<div class="loader"></div> <span>Uploading...</span>';
+  document.getElementById('uploadHint').style.display = 'flex';
+  lucide.createIcons();
 
   statusLog.innerHTML = '';
   statusPulse.style.background = 'var(--success)';
@@ -1348,12 +1413,23 @@ document.getElementById('uploadBtn').addEventListener('click', () => {
               }
 
               // Stop polling on final message
-              if (msg.includes('Closing the browser automatically') || (msg.includes('❌') && msg.includes('[SYS]'))) {
+              if (msg.includes('All done!') || msg.includes('Closing the browser') || (msg.includes('❌') && msg.includes('[SYS]'))) {
                 clearInterval(pollLogs);
-                const isSuccess = msg.includes('Closing the browser');
+                const isSuccess = !msg.includes('❌');
                 statusTitle.textContent = isSuccess ? 'Upload Complete! ✅' : 'Automation Stopped';
                 statusPulse.style.background = isSuccess ? 'var(--success)' : 'var(--accent-yt)';
-                if (isSuccess) statusPulse.style.animation = 'none';
+                
+                if (isSuccess) {
+                  statusPulse.style.animation = 'none';
+                  uploadBtn.classList.add('btn-success');
+                  uploadBtn.innerHTML = '<i data-lucide="check-circle" style="width: 18px; height: 18px;"></i> <span>Uploaded!</span>';
+                  document.getElementById('uploadHint').style.display = 'none';
+                  lucide.createIcons();
+                } else {
+                  uploadBtn.disabled = false;
+                  uploadBtn.innerHTML = originalBtnContent;
+                  document.getElementById('uploadHint').style.display = 'none';
+                }
               }
             });
             logIndex += logData.logs.length;
@@ -1367,6 +1443,9 @@ document.getElementById('uploadBtn').addEventListener('click', () => {
       log('Error: ' + (res.error || 'Unknown error'), 'error');
       statusPulse.style.background = 'var(--accent-yt)';
       statusTitle.textContent = 'Error occurred';
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = originalBtnContent;
+      document.getElementById('uploadHint').style.display = 'none';
     }
   })
   .catch(() => {
@@ -1374,6 +1453,9 @@ document.getElementById('uploadBtn').addEventListener('click', () => {
     log('Make sure server.py is running: python server.py', 'warn');
     statusPulse.style.background = 'var(--accent-yt)';
     statusTitle.textContent = 'Server not running';
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = originalBtnContent;
+    document.getElementById('uploadHint').style.display = 'none';
   });
 });
 
