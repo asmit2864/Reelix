@@ -16,6 +16,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__, static_folder=BASE_DIR)
 
+automation_logs = []
+
+@app.route('/logs', methods=['GET'])
+def get_logs():
+    """Return logs starting from a specific index."""
+    after = int(request.args.get('after', 0))
+    return jsonify({'logs': automation_logs[after:]})
+
 
 @app.route('/')
 def index():
@@ -53,10 +61,37 @@ def upload():
     with open(config_path, 'w') as f:
         json.dump(data, f, indent=2)
 
-    # Run automation in background thread
+    global automation_logs
+    automation_logs.clear()
+
+    # Run automation in background thread and stream output
     def run_automation():
         uploader = os.path.join(BASE_DIR, 'uploader.py')
-        subprocess.run(['python', uploader], check=False, cwd=BASE_DIR)
+        
+        # Force Python to use UTF-8 output to prevent Windows cp1252 emoji crashes
+        env = os.environ.copy()
+        env['PYTHONIOENCODING'] = 'utf-8'
+        
+        # -u forces unbuffered stdout so lines appear instantly
+        process = subprocess.Popen(
+            ['python', '-u', uploader],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            cwd=BASE_DIR,
+            encoding='utf-8',
+            env=env
+        )
+        
+        for line in iter(process.stdout.readline, ''):
+            line_str = line.rstrip() # keep leading spaces, remove trailing newlines
+            if line_str:
+                automation_logs.append(line_str)
+                print(line_str) # Also print to terminal for visibility
+                
+        process.stdout.close()
+        process.wait()
 
     thread = threading.Thread(target=run_automation, daemon=True)
     thread.start()

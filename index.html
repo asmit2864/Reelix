@@ -3,22 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShortReelUploader</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Reelix — Upload reels to YouTube & Instagram</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a24;
-    --border: #2a2a38;
-    --accent-yt: #ff3e3e;
-    --accent-ig: #e040fb;
-    --accent-shared: #00e5ff;
-    --text: #f0f0f8;
-    --text-muted: #6b6b88;
-    --text-dim: #3a3a55;
-    --success: #00e676;
-    --radius: 12px;
+    --bg: #0C0E12;
+    --surface: #13161C;
+    --surface2: #1A1D25;
+    --surface3: #20242E;
+    --border: rgba(255,255,255,0.07);
+    --border-strong: rgba(255,255,255,0.12);
+    --accent-yt: #FF3B3B;
+    --accent-yt-glow: rgba(255, 59, 59, 0.18);
+    --accent-ig: #C13DE0;
+    --accent-ig-glow: rgba(193, 61, 224, 0.18);
+    --accent-shared: #5B8EFF;
+    --text: #F0F2F8;
+    --text-muted: #7A8099;
+    --text-dim: #444B63;
+    --success: #22D17A;
+    --radius: 14px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.45);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,19 +33,29 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'DM Mono', monospace;
+    font-family: 'Sora', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
+    line-height: 1.5;
   }
 
-  /* Background grid */
+  /* Subtle background noise/depth */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background-image:
-      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 0%, rgba(255,59,59,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(193,61,224,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='1' cy='1' r='0.7' fill='rgba(255,255,255,0.018)'/%3E%3C/svg%3E");
     background-size: 40px 40px;
     pointer-events: none;
     z-index: 0;
@@ -47,64 +64,134 @@
   .app {
     position: relative;
     z-index: 1;
-    max-width: 900px;
+    width: 100%;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 40px 24px 80px;
+    padding: 20px 40px 80px;
   }
 
   /* Header */
   header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 48px;
+    justify-content: space-between;
+    padding: 22px 0;
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
     animation: fadeDown 0.6s ease both;
   }
 
-  .logo-mark {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--accent-yt), var(--accent-ig));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Syne', sans-serif;
+  .brand h1 {
+    font-size: 26px;
     font-weight: 800;
-    font-size: 20px;
-    color: #fff;
-    flex-shrink: 0;
-  }
-
-  h1 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 28px;
-    letter-spacing: -0.5px;
-  }
-
-  h1 span {
-    background: linear-gradient(90deg, var(--accent-yt), var(--accent-ig));
+    letter-spacing: -1.5px;
+    background: linear-gradient(100deg, var(--accent-yt) 0%, #FF7B7B 35%, var(--accent-ig) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .subtitle {
+  .brand .subtitle {
     font-size: 12px;
+    font-weight: 500;
     color: var(--text-muted);
     margin-top: 2px;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.2px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent-yt) 0%, #E0358A 50%, var(--accent-ig) 100%);
+    color: white;
+    padding: 11px 22px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13.5px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 20px rgba(255, 59, 59, 0.3), 0 1px 0 rgba(255,255,255,0.1) inset;
+    font-family: 'Sora', sans-serif;
+    letter-spacing: -0.2px;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(255, 59, 59, 0.4), 0 1px 0 rgba(255,255,255,0.12) inset;
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(255, 59, 59, 0.3);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: var(--surface3);
+    box-shadow: none;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 28px;
+    padding: 4px;
+    background: var(--surface2);
+    border-radius: 100px;
+    width: fit-content;
+    border: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 8px 22px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Sora', sans-serif;
+    letter-spacing: -0.1px;
+  }
+
+  .tab.active {
+    background: var(--surface3);
+    color: var(--text);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.05) inset;
+  }
+
+  .tab-content {
+    display: none;
+    animation: fadeUp 0.35s cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .tab-content.active {
+    display: block;
   }
 
   /* Section labels */
   .section-label {
-    font-family: 'Syne', sans-serif;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 16px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -117,134 +204,342 @@
     background: var(--border);
   }
 
+  /* Upload Grid */
+  .upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 16px;
+  }
+
   /* Card */
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 20px;
+    padding: 26px;
     position: relative;
     overflow: hidden;
-    animation: fadeUp 0.5s ease both;
+    animation: fadeUp 0.5s cubic-bezier(0.2, 0, 0, 1) both;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   }
 
   .card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 2px;
+    height: 3px;
+    z-index: 10;
   }
 
-  .card.yt::before { background: var(--accent-yt); }
-  .card.ig::before { background: var(--accent-ig); }
-  .card.shared::before { background: var(--accent-shared); }
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 120px;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .card.yt::before { background: linear-gradient(90deg, var(--accent-yt), #FF7B7B); }
+  .card.ig::before { background: linear-gradient(90deg, #833AB4, var(--accent-ig)); }
+  .card.yt::after { background: linear-gradient(180deg, var(--accent-yt-glow), transparent); }
+  .card.ig::after { background: linear-gradient(180deg, var(--accent-ig-glow), transparent); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 26px;
+    position: relative;
+    z-index: 1;
+  }
 
   .card-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
     font-size: 14px;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 20px;
+    letter-spacing: -0.3px;
   }
 
   .platform-badge {
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: 1.5px;
-    padding: 3px 8px;
-    border-radius: 4px;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
   }
 
-  .badge-yt { background: rgba(255,62,62,0.15); color: var(--accent-yt); }
-  .badge-ig { background: rgba(224,64,251,0.15); color: var(--accent-ig); }
-  .badge-shared { background: rgba(0,229,255,0.1); color: var(--accent-shared); }
+  .badge-yt { background: rgba(255, 59, 59, 0.12); color: var(--accent-yt); border: 1px solid rgba(255,59,59,0.2); }
+  .badge-ig { background: rgba(193, 61, 224, 0.12); color: var(--accent-ig); border: 1px solid rgba(193,61,224,0.2); }
 
-  /* File Drop Zone */
-  .drop-zone {
-    border: 2px dashed var(--border);
-    border-radius: var(--radius);
-    padding: 40px 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  /* Exact User-Provided Neon Switch Design */
+  @property --x {
+    syntax: '<angle>';
+    inherits: true;
+    initial-value: 1deg;
+  }
+
+  @property --c {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #0000;
+  }
+
+  .neon {
+    --x: 1deg;
+    --c: #0000;
+    --color: #0ff;
+    font-size: 13px; /* Scaled for UI */
+    appearance: none;
     position: relative;
-    margin-bottom: 20px;
-    animation: fadeUp 0.4s ease both;
-  }
-
-  .drop-zone:hover, .drop-zone.dragover {
-    border-color: var(--accent-shared);
-    background: rgba(0,229,255,0.04);
-  }
-
-  .drop-zone input[type="file"] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
+    aspect-ratio: 2;
+    border-radius: 100em;
+    background: 
+      linear-gradient(to bottom right, #0001, #0000),
+      #444143;
+    width: 3em;
+    box-shadow:
+      inset 0 0 0.25em -0.25em #0008,
+      inset 0.05em 0.05em 0.2em #000811,
+      inset -0.05em -0.05em 0.15em 0.05em #ccc1,
+      0 0 0 0.11em #545153;
+    transition: --x 0.5s, --c 0.5s, box-shadow 0.5s;
+    filter: drop-shadow(0 0 0.2em var(--c));
     cursor: pointer;
-    width: 100%;
-    height: 100%;
+    margin: 0;
+    
+    &::before {
+      content: "";
+      position: absolute;
+      height: 80%;
+      aspect-ratio: 1;
+      top: 50%;
+      left: 25%;
+      transform: translate(-50%, -50%);
+      background: 
+        radial-gradient(#0000  15%, #343133 16%, #545153 20%),
+        repeating-linear-gradient(#0000 0 10%, #0002 0 20%) 50% 50% / 25% 25% no-repeat,
+        repeating-linear-gradient(90deg, #0000 0 10%, #0002 0 20%) 50% 50% / 25% 25% no-repeat,
+        radial-gradient(var(--c) 17%, #0000 0),
+        #545153;
+      box-shadow:
+        inset -0.05em -0.05em 0.1em #0008,
+        inset 0.05em 0.05em 0.1em #ffffff22,
+        inset 0.05em 0em 0.1em -0.065em var(--c),
+        0.1em 0.1em 0.15em #000c;
+      border-radius: 50%;
+      transition: left 0.5s, box-shadow 0.1s;
+    }
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: calc(100% + 0.25em);
+      height: calc(100% + 0.25em);
+      border: 0.1em solid var(--color);
+      border-radius: 100em;
+      -webkit-mask: conic-gradient(from calc(270deg - var(--x)), #000 calc(2 * var(--x)), #0001 0);
+      box-shadow: 0 0 0 2em #0000; /* hack for safari */
+    }
+    
+    &:hover {
+      --x: 3deg;
+      --c: rgb(from var(--color) r g b / 25%);
+      box-shadow:
+        inset 0 0 0.25em -0.25em #0008,
+        inset 0.05em 0.05em 0.2em #000811,
+        inset -0.05em -0.05em 0.15em 0.05em #ccc1,
+        0 0 0.05em 0.075em #545153;
+    }
+    
+    &:checked {
+      --x: 180deg;
+      --c: var(--color);
+      box-shadow:
+      inset 0 0 0.25em -0.25em #0008,
+      inset 0.05em 0.05em 0.2em #000811,
+      inset -0.05em -0.05em 0.15em 0.05em #ccc1,
+      0 0 0.1em 0.05em #545153;
+      
+      &::before {
+        left: 75%;
+        box-shadow:
+          inset -0.05em -0.05em 0.1em #0008,
+          inset 0.05em 0.05em 0.1em #ffffff22,
+          inset -0.05em 0em 0.1em -0.035em var(--c),
+          0.1em 0.1em 0.15em #000c;
+      }
+    }
+    
+    &[disabled] {
+      opacity: 0.25;
+    }
   }
 
-  .drop-icon {
-    font-size: 36px;
-    margin-bottom: 12px;
-    display: block;
+  .card.inactive .card-body {
+    opacity: 0.4;
+    filter: grayscale(0.8);
+    pointer-events: none;
+  }
+  
+  .card-body {
+    transition: all 0.3s ease;
+  }
+    
+  .neon:checked::before {
+    left: 75%;
+    box-shadow:
+      inset -0.05em -0.05em 0.1em #0008,
+      inset 0.05em 0.05em 0.1em #ffffff22,
+      inset -0.05em 0em 0.1em -0.035em var(--c),
+      0.1em 0.1em 0.15em #000c;
+  }
+  
+  .neon[disabled] {
+    opacity: 0.25;
   }
 
-  .drop-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 16px;
-    margin-bottom: 6px;
-    color: var(--text);
+  .card.inactive .card-body {
+    opacity: 0.4;
+    filter: grayscale(0.8);
+    pointer-events: none;
+  }
+  
+  .card-body {
+    transition: all 0.3s ease;
   }
 
-  .drop-sub {
-    font-size: 12px;
-    color: var(--text-muted);
+  .card.inactive .card-body {
+    opacity: 0.3;
+    filter: grayscale(1);
+    pointer-events: none;
+  }
+  
+  .card-body {
+    transition: all 0.35s ease;
+    position: relative;
+    z-index: 1;
   }
 
-  .file-selected {
-    display: none;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: var(--surface2);
+  /* File Bar */
+  .file-bar {
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    margin-top: 12px;
-    font-size: 13px;
+    border-radius: var(--radius);
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    transition: all 0.25s;
+    cursor: pointer;
   }
 
-  .file-selected.show { display: flex; }
-  .file-icon { font-size: 20px; }
+  .file-bar:hover, .file-bar.dragover {
+    border-color: var(--accent-shared);
+    background: var(--surface2);
+    box-shadow: 0 0 0 3px rgba(91, 142, 255, 0.08);
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .file-icon {
+    font-size: 22px;
+    color: var(--accent-shared);
+    opacity: 0.9;
+  }
+
+  .file-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+
+  .file-subtext {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
 
   .file-name {
-    flex: 1;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--accent-shared);
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--accent-shared);
   }
 
-  .file-size { color: var(--text-muted); font-size: 11px; }
+  .file-size {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-left: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
 
-  .remove-file {
-    background: none;
-    border: none;
+  .file-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1px solid var(--border-strong);
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 16px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    transition: color 0.15s;
+    transition: all 0.2s;
+    font-family: 'Sora', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  .remove-file:hover { color: var(--accent-yt); }
+  .btn-secondary:hover {
+    background: var(--surface3);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+
+  .remove-file {
+    color: var(--text-dim);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .remove-file:hover {
+    color: var(--accent-yt);
+    background: rgba(255, 59, 59, 0.08);
+  }
 
   /* Form elements */
   .form-group {
@@ -253,11 +548,12 @@
 
   label {
     display: block;
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
+    font-size: 10.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.8px;
     margin-bottom: 8px;
     text-transform: uppercase;
+    font-weight: 600;
   }
 
   input[type="text"],
@@ -267,45 +563,69 @@
     width: 100%;
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 9px;
     color: var(--text);
-    font-family: 'DM Mono', monospace;
+    font-family: 'Sora', sans-serif;
     font-size: 13px;
+    font-weight: 500;
     padding: 11px 14px;
     outline: none;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
     appearance: none;
   }
 
+  input[type="text"]::placeholder,
+  textarea::placeholder {
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
   input[type="text"]:focus,
-  input[type="date"]:focus,
   textarea:focus,
   select:focus {
     border-color: var(--accent-shared);
+    background: var(--surface3);
+    box-shadow: 0 0 0 3px rgba(91, 142, 255, 0.1);
   }
 
-  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .yt input[type="text"]:focus, .yt textarea:focus, .yt select:focus {
+    border-color: var(--accent-yt);
+    box-shadow: 0 0 0 3px rgba(255, 59, 59, 0.1);
+  }
+
+  .ig textarea:focus {
+    border-color: var(--accent-ig);
+    box-shadow: 0 0 0 3px rgba(193, 61, 224, 0.1);
+  }
+
+  textarea { resize: vertical; min-height: 90px; line-height: 1.65; }
 
   select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b88' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237A8099'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 36px;
+    background-position: right 12px center;
+    background-size: 15px;
+    padding-right: 40px;
     cursor: pointer;
   }
 
   select option {
-    background: var(--surface2);
+    background: var(--surface3);
+    color: var(--text);
   }
 
-  /* Radio / Toggle */
+  /* Radio Pills */
   .radio-group {
     display: flex;
-    gap: 8px;
+    gap: 4px;
+    background: var(--surface2);
+    padding: 4px;
+    border-radius: 10px;
+    width: fit-content;
+    border: 1px solid var(--border);
   }
 
   .radio-option {
-    flex: 1;
     position: relative;
   }
 
@@ -317,27 +637,61 @@
   }
 
   .radio-option label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    display: block;
+    padding: 6px 18px;
+    border-radius: 7px;
     cursor: pointer;
     font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 600;
     color: var(--text-muted);
-    transition: all 0.15s;
+    transition: all 0.2s;
     margin: 0;
+    letter-spacing: 0.2px;
   }
 
   .radio-option input[type="radio"]:checked + label {
-    border-color: var(--accent-yt);
-    background: rgba(255,62,62,0.08);
-    color: var(--accent-yt);
+    background: var(--surface3);
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
   }
+
+  /* Character Counters */
+  .char-count {
+    text-align: right;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 0.4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .char-count.warn { color: #E8A020; }
+  .char-count.over { color: var(--accent-yt); }
+
+  /* Card hover */
+  .card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Custom Scrollbar for Logs */
+  .log-panel-body::-webkit-scrollbar { width: 5px; }
+  .log-panel-body::-webkit-scrollbar-track { background: transparent; }
+  .log-panel-body::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 10px; }
+  .log-panel-body::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
   /* Tags input */
   .tags-hint {
@@ -377,19 +731,19 @@
   }
 
   .platform-card.yt.active {
-    border-color: var(--accent-yt);
-    background: rgba(255,62,62,0.07);
-    box-shadow: 0 0 20px rgba(255,62,62,0.1);
+    border-color: rgba(255,59,59,0.35);
+    background: rgba(255,59,59,0.05);
+    box-shadow: 0 0 24px rgba(255,59,59,0.08);
   }
 
   .platform-card.ig.active {
-    border-color: var(--accent-ig);
-    background: rgba(224,64,251,0.07);
-    box-shadow: 0 0 20px rgba(224,64,251,0.1);
+    border-color: rgba(193,61,224,0.35);
+    background: rgba(193,61,224,0.05);
+    box-shadow: 0 0 24px rgba(193,61,224,0.08);
   }
 
   .platform-card.inactive {
-    opacity: 0.45;
+    opacity: 0.4;
   }
 
   .platform-info {
@@ -407,26 +761,26 @@
     flex-shrink: 0;
   }
 
-  .yt .platform-icon { background: rgba(255,62,62,0.15); }
-  .ig .platform-icon { background: rgba(224,64,251,0.15); }
-  .yt.inactive .platform-icon { background: rgba(255,255,255,0.05); }
-  .ig.inactive .platform-icon { background: rgba(255,255,255,0.05); }
+  .yt .platform-icon { background: rgba(255,59,59,0.12); }
+  .ig .platform-icon { background: rgba(193,61,224,0.12); }
+  .yt.inactive .platform-icon { background: var(--surface2); }
+  .ig.inactive .platform-icon { background: var(--surface2); }
 
   .platform-name {
-    font-family: 'Syne', sans-serif;
     font-weight: 700;
     font-size: 14px;
     color: var(--text);
     transition: color 0.2s;
+    letter-spacing: -0.3px;
   }
 
   .platform-card.inactive .platform-name { color: var(--text-muted); }
 
   .platform-sub {
-    font-size: 10px;
+    font-size: 10.5px;
     color: var(--text-muted);
     margin-top: 2px;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
   }
 
   /* The actual switch */
@@ -443,9 +797,9 @@
     position: absolute;
     inset: 0;
     border-radius: 100px;
-    background: var(--border);
-    transition: background 0.25s ease;
-    border: 1px solid rgba(255,255,255,0.05);
+    background: var(--surface3);
+    border: 1px solid var(--border-strong);
+    transition: background 0.25s ease, border-color 0.25s ease;
   }
 
   .switch-thumb {
@@ -453,9 +807,9 @@
     top: 3px; left: 3px;
     width: 16px; height: 16px;
     border-radius: 50%;
-    background: var(--text-muted);
+    background: var(--text-dim);
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s ease;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
   }
 
   .yt.active .switch-track { background: var(--accent-yt); border-color: var(--accent-yt); }
@@ -467,113 +821,131 @@
     background: #fff;
   }
 
-  /* Submit button */
-  .submit-btn {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: var(--radius);
-    background: linear-gradient(135deg, var(--accent-yt) 0%, var(--accent-ig) 100%);
-    color: #fff;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 16px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-    margin-top: 8px;
-    position: relative;
-    overflow: hidden;
+  /* Submit Button (Hidden now, as it's in header) */
+  .submit-btn { display: none; }  /* Log Panels Refinement */
+  .log-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: calc(100vh - 300px);
+    min-height: 600px;
   }
 
-  .submit-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0);
-    transition: background 0.2s;
-  }
-
-  .submit-btn:hover::before { background: rgba(255,255,255,0.08); }
-  .submit-btn:active { transform: scale(0.99); }
-  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* Status log */
-  .status-panel {
-    display: none;
+  .system-bar {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    margin-top: 20px;
     overflow: hidden;
-    animation: fadeUp 0.3s ease both;
+    flex-shrink: 0;
+    box-shadow: var(--shadow);
   }
 
-  .status-panel.show { display: block; }
-
-  .status-header {
-    padding: 12px 16px;
+  .system-bar-header {
+    padding: 10px 20px;
+    background: var(--surface2);
     border-bottom: 1px solid var(--border);
-    font-family: 'Syne', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
   }
 
+  .system-log-body {
+    padding: 12px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    max-height: 120px;
+    overflow-y: auto;
+    background: #fff;
+    color: var(--text);
+  }
+
+  .log-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .log-column {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .log-column-header {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .log-column-header.yt { color: var(--accent-yt); background: rgba(255, 0, 0, 0.02); }
+  .log-column-header.ig { color: var(--accent-ig); background: rgba(131, 58, 180, 0.02); }
+
+  .log-column-body {
+    flex: 1;
+    padding: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-y: auto;
+    background: #fff;
+    color: var(--text-muted);
+  }
+
+  .log-line {
+    display: block;
+    margin-bottom: 6px;
+    padding-left: 10px;
+    border-left: 2px solid transparent;
+    animation: fadeRight 0.3s ease both;
+  }
+
+  @keyframes fadeRight {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .log-line.success { color: #059669; border-left-color: #059669; }
+  .log-line.error { color: #DC2626; border-left-color: #DC2626; }
+  .log-line.info { color: #2563EB; border-left-color: #2563EB; }
+  .log-line.warn { color: #D97706; border-left-color: #D97706; }
+
+  /* Pulse animation */
   .pulse {
     width: 8px; height: 8px;
     border-radius: 50%;
     background: var(--success);
-    animation: pulse 1.2s ease infinite;
+    animation: pulse 1.5s ease infinite;
+    box-shadow: 0 0 0 0 rgba(34, 209, 122, 0); 
   }
 
-  .status-log {
-    padding: 16px;
-    font-size: 12px;
-    line-height: 2;
-    max-height: 220px;
-    overflow-y: auto;
-    color: var(--text-muted);
-  }
-
-  .log-line { display: block; }
-  .log-line.success { color: var(--success); }
-  .log-line.error { color: var(--accent-yt); }
-  .log-line.info { color: var(--accent-shared); }
-  .log-line.warn { color: #ffb300; }
-
-  /* Animations */
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.85); }
-  }
-
-  .card:nth-child(2) { animation-delay: 0.05s; }
-  .card:nth-child(3) { animation-delay: 0.1s; }
-  .card:nth-child(4) { animation-delay: 0.15s; }
+  .card:nth-child(2) { animation-delay: 0.06s; }
+  .card:nth-child(3) { animation-delay: 0.12s; }
+  .card:nth-child(4) { animation-delay: 0.18s; }
 
   /* Scrollbar */
   ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--surface); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
   input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.5);
+    filter: invert(0.6);
     cursor: pointer;
   }
 
@@ -581,10 +953,11 @@
     text-align: right;
     font-size: 10px;
     color: var(--text-dim);
-    margin-top: 4px;
+    margin-top: 5px;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  .char-count.warn { color: #ffb300; }
+  .char-count.warn { color: #E8A020; }
   .char-count.over { color: var(--accent-yt); }
 </style>
 </head>
@@ -592,161 +965,206 @@
 <div class="app">
 
   <header>
-    <div class="logo-mark">SR</div>
-    <div>
-      <h1>Short<span>Reel</span> Uploader</h1>
-      <div class="subtitle">Browser automation · YouTube Shorts + Instagram Reels</div>
+    <div class="brand">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <i data-lucide="clapperboard" style="color: var(--accent-yt); width: 32px; height: 32px;"></i>
+        <h1>Reelix</h1>
+      </div>
+      <div class="subtitle">Upload reels to YouTube & Instagram in one click</div>
+    </div>
+    <div class="header-actions">
+      <button id="uploadBtn" class="btn-primary">
+        <i data-lucide="rocket" style="width: 18px; height: 18px;"></i>
+        <span>Start Upload</span>
+      </button>
     </div>
   </header>
 
-  <!-- File Drop Zone -->
-  <div class="section-label">01 — Video File</div>
-  <div class="drop-zone" id="dropZone">
-    <span class="drop-icon">🎬</span>
-    <div class="drop-title">Click to select video</div>
-    <div class="drop-sub">MP4, MOV, or WebM · From anywhere on your computer</div>
-  </div>
-  <div class="file-selected" id="fileSelected">
-    <span class="file-icon">📹</span>
-    <span class="file-name" id="fileName"></span>
-    <span class="file-size" id="fileSize"></span>
-    <button class="remove-file" id="removeFile" title="Remove">✕</button>
+  <div class="tabs">
+    <button class="tab active" data-tab="upload">
+      <i data-lucide="upload-cloud" style="width: 16px; height: 16px;"></i>
+      Upload
+    </button>
+    <button class="tab" data-tab="logs">
+      <i data-lucide="activity" style="width: 16px; height: 16px;"></i>
+      Live Logs
+    </button>
   </div>
 
-  <!-- Platform Select -->
-  <div class="section-label" style="margin-top:32px;">02 — Platforms</div>
-  <div class="platforms-row">
-
-    <div class="platform-card yt active" id="ytPlatformCard">
-      <div class="platform-info">
-        <div class="platform-icon">▶️</div>
-        <div>
-          <div class="platform-name">YouTube Shorts</div>
-          <div class="platform-sub">Upload as a Short</div>
+  <div id="uploadTabContent" class="tab-content active">
+    <!-- File Bar -->
+    <div class="file-bar" id="dropZone">
+      <div class="file-info">
+        <i data-lucide="video" class="file-icon"></i>
+        <div id="fileStatus">
+          <div class="file-label">Select Video File</div>
+          <div class="file-subtext">MP4, MOV, or WebM</div>
+        </div>
+        <div id="fileDetails" style="display: none; min-width: 0;">
+          <span class="file-name" id="fileName"></span>
+          <span class="file-size" id="fileSize"></span>
         </div>
       </div>
-      <label class="switch">
-        <input type="checkbox" id="toggleYT" checked>
-        <div class="switch-track"></div>
-        <div class="switch-thumb"></div>
-      </label>
-    </div>
-
-    <div class="platform-card ig active" id="igPlatformCard">
-      <div class="platform-info">
-        <div class="platform-icon">📸</div>
-        <div>
-          <div class="platform-name">Instagram Reels</div>
-          <div class="platform-sub">Upload as a Reel</div>
-        </div>
-      </div>
-      <label class="switch">
-        <input type="checkbox" id="toggleIG" checked>
-        <div class="switch-track"></div>
-        <div class="switch-thumb"></div>
-      </label>
-    </div>
-
-  </div>
-
-  <!-- YouTube Fields -->
-  <div class="section-label" style="margin-top:8px;">03 — YouTube</div>
-  <div class="card yt" id="ytCard">
-    <div class="card-title">
-      <span class="platform-badge badge-yt">YT</span>
-      YouTube Shorts Details
-    </div>
-
-    <div class="form-group">
-      <label>Title</label>
-      <input type="text" id="ytTitle" placeholder="Enter video title..." maxlength="100">
-      <div class="char-count" id="ytTitleCount">0 / 100</div>
-    </div>
-
-    <div class="form-group">
-      <label>Description</label>
-      <textarea id="ytDesc" placeholder="Describe your video..." maxlength="5000"></textarea>
-      <div class="char-count" id="ytDescCount">0 / 5000</div>
-    </div>
-
-    <div class="form-group">
-      <label>Playlist</label>
-      <input type="text" id="ytPlaylist" placeholder="Enter playlist name...">
-    </div>
-
-    <div class="form-group">
-      <label>Visibility</label>
-      <select id="ytVisibility">
-        <option value="PRIVATE">Private (Wait for checks)</option>
-        <option value="UNLISTED">Unlisted (Wait for checks)</option>
-        <option value="PUBLIC" selected>Public (Wait for checks)</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Made for Kids?</label>
-      <div class="radio-group">
-        <div class="radio-option">
-          <input type="radio" name="madeForKids" id="kidsNo" value="no" checked>
-          <label for="kidsNo">🚫 No</label>
-        </div>
-        <div class="radio-option">
-          <input type="radio" name="madeForKids" id="kidsYes" value="yes">
-          <label for="kidsYes">👶 Yes</label>
-        </div>
+      <div class="file-actions">
+        <button class="btn-secondary" id="browseBtn">
+          <i data-lucide="search" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
+          Browse
+        </button>
+        <button class="remove-file" id="removeFile" style="display: none;" title="Remove">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
       </div>
     </div>
 
-    <div class="form-group">
-      <label>Tags <span style="color:var(--text-dim)">(comma-separated)</span></label>
-      <input type="text" id="ytTags" placeholder="gaming, tutorial, shorts, funny...">
-      <div class="tags-hint">Separate multiple tags with commas</div>
-    </div>
+    <div class="upload-grid">
+      <!-- YouTube Fields -->
+      <div class="card yt" id="ytCard">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="youtube" style="color: var(--accent-yt);"></i>
+            <span class="platform-badge badge-yt">YouTube</span>
+          </div>
+          <input type="checkbox" id="toggleYT" role="switch" class="neon" style="--color: var(--accent-yt)" checked>
+        </div>
 
-    <div class="form-group" style="margin-bottom:0">
-      <label>Recording Location</label>
-      <input type="text" id="ytLocation" placeholder="City, Country...">
-    </div>
-  </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="ytTitle" placeholder="Enter video title..." maxlength="100">
+            <div class="char-count" id="ytTitleCount">0 / 100</div>
+          </div>
 
-  <!-- Instagram Fields -->
-  <div class="section-label">04 — Instagram</div>
-  <div class="card ig" id="igCard">
-    <div class="card-title">
-      <span class="platform-badge badge-ig">IG</span>
-      Instagram Reels Details
-    </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="ytDesc" placeholder="Describe your video..." maxlength="5000"></textarea>
+            <div class="char-count" id="ytDescCount">0 / 5000</div>
+          </div>
 
-    <div class="form-group" style="margin-bottom:0">
-      <label>Caption</label>
-      <textarea id="igCaption" placeholder="Write your reel caption... #hashtags work here too!" maxlength="2200"></textarea>
-      <div class="char-count" id="igCaptionCount">0 / 2200</div>
+          <div class="form-group">
+            <label>Playlist</label>
+            <input type="text" id="ytPlaylist" placeholder="Enter playlist name...">
+          </div>
+
+          <div class="form-group">
+            <label>Visibility</label>
+            <select id="ytVisibility">
+              <option value="PRIVATE">Private</option>
+              <option value="UNLISTED">Unlisted</option>
+              <option value="PUBLIC" selected>Public</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Made for Kids?</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="madeForKids" id="kidsNo" value="no" checked>
+                <label for="kidsNo">No</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="madeForKids" id="kidsYes" value="yes">
+                <label for="kidsYes">Yes</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Tags</label>
+            <input type="text" id="ytTags" placeholder="gaming, tutorial, shorts...">
+          </div>
+
+          <div class="form-group" style="margin-bottom:0">
+            <label>Recording Location</label>
+            <input type="text" id="ytLocation" placeholder="City, Country...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Instagram Fields -->
+      <div class="card ig" id="igCard">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="instagram" style="color: var(--accent-ig);"></i>
+            <span class="platform-badge badge-ig">Instagram</span>
+          </div>
+          <input type="checkbox" id="toggleIG" role="switch" class="neon" style="--color: var(--accent-ig)" checked>
+        </div>
+
+        <div class="card-body" style="flex: 1; display: flex; flex-direction: column;">
+          <div class="form-group" style="margin-bottom:0; flex: 1; display: flex; flex-direction: column;">
+            <label>Caption</label>
+            <textarea id="igCaption" placeholder="Write your reel caption..." maxlength="2200" style="flex: 1; min-height: 200px;"></textarea>
+            <div class="char-count" id="igCaptionCount">0 / 2200</div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
 
   <!-- Upload Button -->
   <button class="submit-btn" id="uploadBtn" type="button">
     🚀 Start Upload Automation
   </button>
 
-  <!-- Status Panel -->
-  <div class="status-panel" id="statusPanel">
-    <div class="status-header">
-      <div class="pulse" id="statusPulse"></div>
-      <span id="statusTitle">Running automation...</span>
+  </div><!-- End #uploadTabContent -->
+
+  <div id="logsTabContent" class="tab-content">
+    <div class="log-container">
+      <!-- System Bar (Top) -->
+      <div class="system-bar">
+        <div class="system-bar-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="pulse" id="statusPulse"></div>
+            <span id="statusTitle">System Status: Waiting</span>
+          </div>
+          <span>System Logs</span>
+        </div>
+        <div class="system-log-body" id="statusLog"></div>
+      </div>
+
+      <!-- Platform Columns (Dual) -->
+      <div class="log-columns">
+        <div class="log-column">
+          <div class="log-column-header yt">
+            <i data-lucide="play" style="width: 16px; height: 16px;"></i>
+            YouTube Stream
+          </div>
+          <div class="log-column-body" id="ytLog"></div>
+        </div>
+        <div class="log-column">
+          <div class="log-column-header ig">
+            <i data-lucide="camera" style="width: 16px; height: 16px;"></i>
+            Instagram Stream
+          </div>
+          <div class="log-column-body" id="igLog"></div>
+        </div>
+      </div>
     </div>
-    <div class="status-log" id="statusLog"></div>
-  </div>
+  </div><!-- End #logsTabContent -->
 
 </div>
 
 <script>
+// ─── Tab Switching ───────────────────────────────────────────────
+const tabs = document.querySelectorAll('.tab');
+const tabContents = document.querySelectorAll('.tab-content');
+
+function switchTab(tabId) {
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+  tabContents.forEach(c => c.classList.toggle('active', c.id === tabId + 'TabContent'));
+}
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
 // ─── File handling ───────────────────────────────────────────────
 const dropZone = document.getElementById('dropZone');
-const fileSelected = document.getElementById('fileSelected');
 const fileName = document.getElementById('fileName');
 const fileSize = document.getElementById('fileSize');
 const removeFile = document.getElementById('removeFile');
+const fileStatus = document.getElementById('fileStatus');
+const fileDetails = document.getElementById('fileDetails');
+const browseBtn = document.getElementById('browseBtn');
 let selectedFilePath = '';
 
 function formatSize(bytes) {
@@ -754,34 +1172,42 @@ function formatSize(bytes) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-dropZone.addEventListener('click', async () => {
+async function pickFile() {
   try {
     dropZone.style.opacity = '0.5';
-    dropZone.querySelector('.drop-title').textContent = 'Opening file browser...';
-    
     const res = await fetch('http://localhost:5555/pick-file');
     const data = await res.json();
-    
     dropZone.style.opacity = '1';
-    dropZone.querySelector('.drop-title').textContent = 'Click to select video';
     
     if (data.path) {
       fileName.textContent = data.name;
       fileSize.textContent = formatSize(data.size);
-      fileSelected.classList.add('show');
-      dropZone.style.display = 'none';
-      selectedFilePath = data.path; // Absolute path from backend
+      
+      fileStatus.style.display = 'none';
+      fileDetails.style.display = 'block';
+      browseBtn.style.display = 'none';
+      removeFile.style.display = 'flex';
+      
+      selectedFilePath = data.path;
     }
   } catch (err) {
     dropZone.style.opacity = '1';
-    dropZone.querySelector('.drop-title').textContent = 'Click to select video';
     console.error('Error picking file:', err);
+  }
+}
+
+dropZone.addEventListener('click', (e) => {
+  if (e.target !== removeFile && !removeFile.contains(e.target)) {
+    pickFile();
   }
 });
 
-removeFile.addEventListener('click', () => {
-  fileSelected.classList.remove('show');
-  dropZone.style.display = 'block';
+removeFile.addEventListener('click', (e) => {
+  e.stopPropagation();
+  fileStatus.style.display = 'block';
+  fileDetails.style.display = 'none';
+  browseBtn.style.display = 'block';
+  removeFile.style.display = 'none';
   selectedFilePath = '';
 });
 
@@ -805,50 +1231,38 @@ const toggleYT = document.getElementById('toggleYT');
 const toggleIG = document.getElementById('toggleIG');
 const ytCard = document.getElementById('ytCard');
 const igCard = document.getElementById('igCard');
-const ytPlatformCard = document.getElementById('ytPlatformCard');
-const igPlatformCard = document.getElementById('igPlatformCard');
 
-function applyPlatformState(checkbox, platformCard, contentCard) {
+function applyPlatformState(checkbox, contentCard) {
   const on = checkbox.checked;
-  platformCard.classList.toggle('active', on);
-  platformCard.classList.toggle('inactive', !on);
-  contentCard.style.opacity = on ? '1' : '0.35';
-  contentCard.style.pointerEvents = on ? '' : 'none';
-  contentCard.style.transition = 'opacity 0.25s ease';
+  contentCard.classList.toggle('inactive', !on);
 }
 
-// Click anywhere on the platform card (not just the checkbox) toggles it
-ytPlatformCard.addEventListener('click', (e) => {
-  if (e.target !== toggleYT) {
-    toggleYT.checked = !toggleYT.checked;
-  }
-  applyPlatformState(toggleYT, ytPlatformCard, ytCard);
-});
-
-igPlatformCard.addEventListener('click', (e) => {
-  if (e.target !== toggleIG) {
-    toggleIG.checked = !toggleIG.checked;
-  }
-  applyPlatformState(toggleIG, igPlatformCard, igCard);
-});
+toggleYT.addEventListener('change', () => applyPlatformState(toggleYT, ytCard));
+toggleIG.addEventListener('change', () => applyPlatformState(toggleIG, igCard));
 
 // Init state
-applyPlatformState(toggleYT, ytPlatformCard, ytCard);
-applyPlatformState(toggleIG, igPlatformCard, igCard);
+applyPlatformState(toggleYT, ytCard);
+applyPlatformState(toggleIG, igCard);
 
 // ─── Status log ──────────────────────────────────────────────────
 const statusPanel = document.getElementById('statusPanel');
 const statusLog = document.getElementById('statusLog');
+const ytLog = document.getElementById('ytLog');
+const igLog = document.getElementById('igLog');
 const statusTitle = document.getElementById('statusTitle');
 const statusPulse = document.getElementById('statusPulse');
 
-function log(msg, type = '') {
+function appendLine(container, msg, type = '') {
   const line = document.createElement('span');
   line.className = `log-line ${type}`;
+  line.textContent = msg;
+  container.appendChild(line);
+  container.scrollTop = container.scrollHeight;
+}
+
+function log(msg, type = '') {
   const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-  line.textContent = `[${time}] ${msg}`;
-  statusLog.appendChild(line);
-  statusLog.scrollTop = statusLog.scrollHeight;
+  appendLine(statusLog, `[${time}] ${msg}`, type);
 }
 
 // ─── Upload button ───────────────────────────────────────────────
@@ -882,10 +1296,12 @@ document.getElementById('uploadBtn').addEventListener('click', () => {
     }
   };
 
-  statusPanel.classList.add('show');
   statusLog.innerHTML = '';
   statusPulse.style.background = 'var(--success)';
   statusTitle.textContent = 'Running automation...';
+  
+  // Switch to Logs Tab
+  switchTab('logs');
 
   log('Preparing upload config...', 'info');
   log(`Video: ${selectedFilePath}`, '');
@@ -899,11 +1315,54 @@ document.getElementById('uploadBtn').addEventListener('click', () => {
   .then(r => r.json())
   .then(res => {
     if (res.started) {
-      log('Browser automation started!', 'success');
-      if (data.platforms.youtube) log('▶ Opening YouTube Studio...', 'info');
-      if (data.platforms.instagram) log('▶ Opening Instagram...', 'info');
-      log('Check the browser window that opened.', 'warn');
-      statusTitle.textContent = 'Automation running — check browser';
+      statusTitle.textContent = 'Automation running (live logs)...';
+      ytLog.innerHTML = '';
+      igLog.innerHTML = '';
+      statusLog.innerHTML = '';
+
+      let logIndex = 0;
+      const pollLogs = setInterval(async () => {
+        try {
+          const logRes = await fetch(`http://localhost:5555/logs?after=${logIndex}`);
+          const logData = await logRes.json();
+
+          if (logData.logs && logData.logs.length > 0) {
+            logData.logs.forEach(msg => {
+              // Determine type by emoji
+              let type = '';
+              if (msg.includes('✅')) type = 'success';
+              else if (msg.includes('⚠️')) type = 'warn';
+              else if (msg.includes('❌')) type = 'error';
+              else if (msg.includes('▶') || msg.includes('🚀') || msg.includes('🔗')) type = 'info';
+
+              // Route by prefix
+              if (msg.startsWith('[YT] ')) {
+                appendLine(ytLog, msg.slice(5), type);
+              } else if (msg.startsWith('[IG] ')) {
+                appendLine(igLog, msg.slice(5), type);
+              } else {
+                // [SYS] or untagged — show in system log strip
+                const cleanMsg = msg.startsWith('[SYS] ') ? msg.slice(6) : msg;
+                const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+                appendLine(statusLog, `[${time}] ${cleanMsg}`, type);
+              }
+
+              // Stop polling on final message
+              if (msg.includes('Closing the browser automatically') || (msg.includes('❌') && msg.includes('[SYS]'))) {
+                clearInterval(pollLogs);
+                const isSuccess = msg.includes('Closing the browser');
+                statusTitle.textContent = isSuccess ? 'Upload Complete! ✅' : 'Automation Stopped';
+                statusPulse.style.background = isSuccess ? 'var(--success)' : 'var(--accent-yt)';
+                if (isSuccess) statusPulse.style.animation = 'none';
+              }
+            });
+            logIndex += logData.logs.length;
+          }
+        } catch (e) {
+          console.error('Log polling failed', e);
+        }
+      }, 500);
+
     } else {
       log('Error: ' + (res.error || 'Unknown error'), 'error');
       statusPulse.style.background = 'var(--accent-yt)';
@@ -949,6 +1408,8 @@ kidsRadios.forEach(radio => {
     if (radio.checked) localStorage.setItem('shortreel_madeForKids', radio.value);
   });
 });
+// ─── Initialize Lucide ──────────────────────────────────────────
+lucide.createIcons();
 </script>
 </body>
 </html>
