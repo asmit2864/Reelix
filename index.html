@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShortReelUploader</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a38;
+    --accent-yt: #ff3e3e;
+    --accent-ig: #e040fb;
+    --accent-shared: #00e5ff;
+    --text: #f0f0f8;
+    --text-muted: #6b6b88;
+    --text-dim: #3a3a55;
+    --success: #00e676;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 48px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .logo-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent-yt), var(--accent-ig));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: -0.5px;
+  }
+
+  h1 span {
+    background: linear-gradient(90deg, var(--accent-yt), var(--accent-ig));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .card.yt::before { background: var(--accent-yt); }
+  .card.ig::before { background: var(--accent-ig); }
+  .card.shared::before { background: var(--accent-shared); }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .platform-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .badge-yt { background: rgba(255,62,62,0.15); color: var(--accent-yt); }
+  .badge-ig { background: rgba(224,64,251,0.15); color: var(--accent-ig); }
+  .badge-shared { background: rgba(0,229,255,0.1); color: var(--accent-shared); }
+
+  /* File Drop Zone */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    margin-bottom: 20px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent-shared);
+    background: rgba(0,229,255,0.04);
+  }
+
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drop-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .drop-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  .drop-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .file-selected {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+
+  .file-selected.show { display: flex; }
+  .file-icon { font-size: 20px; }
+
+  .file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--accent-shared);
+  }
+
+  .file-size { color: var(--text-muted); font-size: 11px; }
+
+  .remove-file {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.15s;
+  }
+
+  .remove-file:hover { color: var(--accent-yt); }
+
+  /* Form elements */
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  textarea,
+  select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+
+  input[type="text"]:focus,
+  input[type="date"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--accent-shared);
+  }
+
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b88' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  select option {
+    background: var(--surface2);
+  }
+
+  /* Radio / Toggle */
+  .radio-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .radio-option {
+    flex: 1;
+    position: relative;
+  }
+
+  .radio-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .radio-option label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    margin: 0;
+  }
+
+  .radio-option input[type="radio"]:checked + label {
+    border-color: var(--accent-yt);
+    background: rgba(255,62,62,0.08);
+    color: var(--accent-yt);
+  }
+
+  /* Tags input */
+  .tags-hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* Grid layout */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Platforms toggle */
+  .platforms-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.45s ease both;
+  }
+
+  .platform-card {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    transition: all 0.25s ease;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .platform-card.yt.active {
+    border-color: var(--accent-yt);
+    background: rgba(255,62,62,0.07);
+    box-shadow: 0 0 20px rgba(255,62,62,0.1);
+  }
+
+  .platform-card.ig.active {
+    border-color: var(--accent-ig);
+    background: rgba(224,64,251,0.07);
+    box-shadow: 0 0 20px rgba(224,64,251,0.1);
+  }
+
+  .platform-card.inactive {
+    opacity: 0.45;
+  }
+
+  .platform-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .platform-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    transition: all 0.25s;
+    flex-shrink: 0;
+  }
+
+  .yt .platform-icon { background: rgba(255,62,62,0.15); }
+  .ig .platform-icon { background: rgba(224,64,251,0.15); }
+  .yt.inactive .platform-icon { background: rgba(255,255,255,0.05); }
+  .ig.inactive .platform-icon { background: rgba(255,255,255,0.05); }
+
+  .platform-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+    transition: color 0.2s;
+  }
+
+  .platform-card.inactive .platform-name { color: var(--text-muted); }
+
+  .platform-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    letter-spacing: 0.3px;
+  }
+
+  /* The actual switch */
+  .switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .switch input { display: none; }
+
+  .switch-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 100px;
+    background: var(--border);
+    transition: background 0.25s ease;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .switch-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+
+  .yt.active .switch-track { background: var(--accent-yt); border-color: var(--accent-yt); }
+  .ig.active .switch-track { background: var(--accent-ig); border-color: var(--accent-ig); }
+
+  .yt.active .switch-thumb,
+  .ig.active .switch-thumb {
+    transform: translateX(20px);
+    background: #fff;
+  }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--accent-yt) 0%, var(--accent-ig) 100%);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .submit-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.2s;
+  }
+
+  .submit-btn:hover::before { background: rgba(255,255,255,0.08); }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Status log */
+  .status-panel {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 20px;
+    overflow: hidden;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .status-panel.show { display: block; }
+
+  .status-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pulse {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 1.2s ease infinite;
+  }
+
+  .status-log {
+    padding: 16px;
+    font-size: 12px;
+    line-height: 2;
+    max-height: 220px;
+    overflow-y: auto;
+    color: var(--text-muted);
+  }
+
+  .log-line { display: block; }
+  .log-line.success { color: var(--success); }
+  .log-line.error { color: var(--accent-yt); }
+  .log-line.info { color: var(--accent-shared); }
+  .log-line.warn { color: #ffb300; }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  .card:nth-child(2) { animation-delay: 0.05s; }
+  .card:nth-child(3) { animation-delay: 0.1s; }
+  .card:nth-child(4) { animation-delay: 0.15s; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+  }
+
+  .char-count {
+    text-align: right;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .char-count.warn { color: #ffb300; }
+  .char-count.over { color: var(--accent-yt); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo-mark">SR</div>
+    <div>
+      <h1>Short<span>Reel</span> Uploader</h1>
+      <div class="subtitle">Browser automation · YouTube Shorts + Instagram Reels</div>
+    </div>
+  </header>
+
+  <!-- File Drop Zone -->
+  <div class="section-label">01 — Video File</div>
+  <div class="drop-zone" id="dropZone">
+    <span class="drop-icon">🎬</span>
+    <div class="drop-title">Click to select video</div>
+    <div class="drop-sub">MP4, MOV, or WebM · From anywhere on your computer</div>
+  </div>
+  <div class="file-selected" id="fileSelected">
+    <span class="file-icon">📹</span>
+    <span class="file-name" id="fileName"></span>
+    <span class="file-size" id="fileSize"></span>
+    <button class="remove-file" id="removeFile" title="Remove">✕</button>
+  </div>
+
+  <!-- Platform Select -->
+  <div class="section-label" style="margin-top:32px;">02 — Platforms</div>
+  <div class="platforms-row">
+
+    <div class="platform-card yt active" id="ytPlatformCard">
+      <div class="platform-info">
+        <div class="platform-icon">▶️</div>
+        <div>
+          <div class="platform-name">YouTube Shorts</div>
+          <div class="platform-sub">Upload as a Short</div>
+        </div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="toggleYT" checked>
+        <div class="switch-track"></div>
+        <div class="switch-thumb"></div>
+      </label>
+    </div>
+
+    <div class="platform-card ig active" id="igPlatformCard">
+      <div class="platform-info">
+        <div class="platform-icon">📸</div>
+        <div>
+          <div class="platform-name">Instagram Reels</div>
+          <div class="platform-sub">Upload as a Reel</div>
+        </div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="toggleIG" checked>
+        <div class="switch-track"></div>
+        <div class="switch-thumb"></div>
+      </label>
+    </div>
+
+  </div>
+
+  <!-- YouTube Fields -->
+  <div class="section-label" style="margin-top:8px;">03 — YouTube</div>
+  <div class="card yt" id="ytCard">
+    <div class="card-title">
+      <span class="platform-badge badge-yt">YT</span>
+      YouTube Shorts Details
+    </div>
+
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" id="ytTitle" placeholder="Enter video title..." maxlength="100">
+      <div class="char-count" id="ytTitleCount">0 / 100</div>
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="ytDesc" placeholder="Describe your video..." maxlength="5000"></textarea>
+      <div class="char-count" id="ytDescCount">0 / 5000</div>
+    </div>
+
+    <div class="form-group">
+      <label>Playlist</label>
+      <input type="text" id="ytPlaylist" placeholder="Enter playlist name...">
+    </div>
+
+    <div class="form-group">
+      <label>Visibility</label>
+      <select id="ytVisibility">
+        <option value="PRIVATE">Private (Wait for checks)</option>
+        <option value="UNLISTED">Unlisted (Wait for checks)</option>
+        <option value="PUBLIC" selected>Public (Wait for checks)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Made for Kids?</label>
+      <div class="radio-group">
+        <div class="radio-option">
+          <input type="radio" name="madeForKids" id="kidsNo" value="no" checked>
+          <label for="kidsNo">🚫 No</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" name="madeForKids" id="kidsYes" value="yes">
+          <label for="kidsYes">👶 Yes</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Tags <span style="color:var(--text-dim)">(comma-separated)</span></label>
+      <input type="text" id="ytTags" placeholder="gaming, tutorial, shorts, funny...">
+      <div class="tags-hint">Separate multiple tags with commas</div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:0">
+      <label>Recording Location</label>
+      <input type="text" id="ytLocation" placeholder="City, Country...">
+    </div>
+  </div>
+
+  <!-- Instagram Fields -->
+  <div class="section-label">04 — Instagram</div>
+  <div class="card ig" id="igCard">
+    <div class="card-title">
+      <span class="platform-badge badge-ig">IG</span>
+      Instagram Reels Details
+    </div>
+
+    <div class="form-group" style="margin-bottom:0">
+      <label>Caption</label>
+      <textarea id="igCaption" placeholder="Write your reel caption... #hashtags work here too!" maxlength="2200"></textarea>
+      <div class="char-count" id="igCaptionCount">0 / 2200</div>
+    </div>
+  </div>
+
+  <!-- Upload Button -->
+  <button class="submit-btn" id="uploadBtn" type="button">
+    🚀 Start Upload Automation
+  </button>
+
+  <!-- Status Panel -->
+  <div class="status-panel" id="statusPanel">
+    <div class="status-header">
+      <div class="pulse" id="statusPulse"></div>
+      <span id="statusTitle">Running automation...</span>
+    </div>
+    <div class="status-log" id="statusLog"></div>
+  </div>
+
+</div>
+
+<script>
+// ─── File handling ───────────────────────────────────────────────
+const dropZone = document.getElementById('dropZone');
+const fileSelected = document.getElementById('fileSelected');
+const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
+const removeFile = document.getElementById('removeFile');
+let selectedFilePath = '';
+
+function formatSize(bytes) {
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+dropZone.addEventListener('click', async () => {
+  try {
+    dropZone.style.opacity = '0.5';
+    dropZone.querySelector('.drop-title').textContent = 'Opening file browser...';
+    
+    const res = await fetch('http://localhost:5555/pick-file');
+    const data = await res.json();
+    
+    dropZone.style.opacity = '1';
+    dropZone.querySelector('.drop-title').textContent = 'Click to select video';
+    
+    if (data.path) {
+      fileName.textContent = data.name;
+      fileSize.textContent = formatSize(data.size);
+      fileSelected.classList.add('show');
+      dropZone.style.display = 'none';
+      selectedFilePath = data.path; // Absolute path from backend
+    }
+  } catch (err) {
+    dropZone.style.opacity = '1';
+    dropZone.querySelector('.drop-title').textContent = 'Click to select video';
+    console.error('Error picking file:', err);
+  }
+});
+
+removeFile.addEventListener('click', () => {
+  fileSelected.classList.remove('show');
+  dropZone.style.display = 'block';
+  selectedFilePath = '';
+});
+
+// ─── Char counters ───────────────────────────────────────────────
+function setupCounter(inputId, countId, max) {
+  const el = document.getElementById(inputId);
+  const counter = document.getElementById(countId);
+  el.addEventListener('input', () => {
+    const len = el.value.length;
+    counter.textContent = `${len} / ${max}`;
+    counter.className = 'char-count' + (len > max * 0.9 ? (len >= max ? ' over' : ' warn') : '');
+  });
+}
+
+setupCounter('ytTitle', 'ytTitleCount', 100);
+setupCounter('ytDesc', 'ytDescCount', 5000);
+setupCounter('igCaption', 'igCaptionCount', 2200);
+
+// ─── Platform switches ───────────────────────────────────────────
+const toggleYT = document.getElementById('toggleYT');
+const toggleIG = document.getElementById('toggleIG');
+const ytCard = document.getElementById('ytCard');
+const igCard = document.getElementById('igCard');
+const ytPlatformCard = document.getElementById('ytPlatformCard');
+const igPlatformCard = document.getElementById('igPlatformCard');
+
+function applyPlatformState(checkbox, platformCard, contentCard) {
+  const on = checkbox.checked;
+  platformCard.classList.toggle('active', on);
+  platformCard.classList.toggle('inactive', !on);
+  contentCard.style.opacity = on ? '1' : '0.35';
+  contentCard.style.pointerEvents = on ? '' : 'none';
+  contentCard.style.transition = 'opacity 0.25s ease';
+}
+
+// Click anywhere on the platform card (not just the checkbox) toggles it
+ytPlatformCard.addEventListener('click', (e) => {
+  if (e.target !== toggleYT) {
+    toggleYT.checked = !toggleYT.checked;
+  }
+  applyPlatformState(toggleYT, ytPlatformCard, ytCard);
+});
+
+igPlatformCard.addEventListener('click', (e) => {
+  if (e.target !== toggleIG) {
+    toggleIG.checked = !toggleIG.checked;
+  }
+  applyPlatformState(toggleIG, igPlatformCard, igCard);
+});
+
+// Init state
+applyPlatformState(toggleYT, ytPlatformCard, ytCard);
+applyPlatformState(toggleIG, igPlatformCard, igCard);
+
+// ─── Status log ──────────────────────────────────────────────────
+const statusPanel = document.getElementById('statusPanel');
+const statusLog = document.getElementById('statusLog');
+const statusTitle = document.getElementById('statusTitle');
+const statusPulse = document.getElementById('statusPulse');
+
+function log(msg, type = '') {
+  const line = document.createElement('span');
+  line.className = `log-line ${type}`;
+  const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+  line.textContent = `[${time}] ${msg}`;
+  statusLog.appendChild(line);
+  statusLog.scrollTop = statusLog.scrollHeight;
+}
+
+// ─── Upload button ───────────────────────────────────────────────
+document.getElementById('uploadBtn').addEventListener('click', () => {
+  if (!selectedFilePath) {
+    alert('Please select a video file first.');
+    return;
+  }
+  if (!toggleYT.checked && !toggleIG.checked) {
+    alert('Please select at least one platform.');
+    return;
+  }
+
+  const data = {
+    video_path: selectedFilePath,
+    platforms: {
+      youtube: toggleYT.checked,
+      instagram: toggleIG.checked
+    },
+    youtube: {
+      title: document.getElementById('ytTitle').value,
+      description: document.getElementById('ytDesc').value,
+      playlist: document.getElementById('ytPlaylist').value,
+      visibility: document.getElementById('ytVisibility').value,
+      made_for_kids: document.querySelector('input[name="madeForKids"]:checked').value === 'yes',
+      tags: document.getElementById('ytTags').value,
+      location: document.getElementById('ytLocation').value,
+    },
+    instagram: {
+      caption: document.getElementById('igCaption').value
+    }
+  };
+
+  statusPanel.classList.add('show');
+  statusLog.innerHTML = '';
+  statusPulse.style.background = 'var(--success)';
+  statusTitle.textContent = 'Running automation...';
+
+  log('Preparing upload config...', 'info');
+  log(`Video: ${selectedFilePath}`, '');
+
+  // Send to Python backend
+  fetch('http://localhost:5555/upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.started) {
+      log('Browser automation started!', 'success');
+      if (data.platforms.youtube) log('▶ Opening YouTube Studio...', 'info');
+      if (data.platforms.instagram) log('▶ Opening Instagram...', 'info');
+      log('Check the browser window that opened.', 'warn');
+      statusTitle.textContent = 'Automation running — check browser';
+    } else {
+      log('Error: ' + (res.error || 'Unknown error'), 'error');
+      statusPulse.style.background = 'var(--accent-yt)';
+      statusTitle.textContent = 'Error occurred';
+    }
+  })
+  .catch(() => {
+    log('Could not connect to local server.', 'error');
+    log('Make sure server.py is running: python server.py', 'warn');
+    statusPulse.style.background = 'var(--accent-yt)';
+    statusTitle.textContent = 'Server not running';
+  });
+});
+
+// ─── LocalStorage Persistence ──────────────────────────────────────
+const fieldsToSave = [
+  'ytTitle', 'ytDesc', 'ytPlaylist', 'ytVisibility', 'ytTags', 'ytLocation',
+  'igCaption'
+];
+
+fieldsToSave.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    const saved = localStorage.getItem('shortreel_' + id);
+    if (saved !== null) {
+      el.value = saved;
+      el.dispatchEvent(new Event('input')); // Update character counters
+    }
+    const saveValue = () => localStorage.setItem('shortreel_' + id, el.value);
+    el.addEventListener('input', saveValue);
+    el.addEventListener('change', saveValue);
+  }
+});
+
+const kidsRadios = document.querySelectorAll('input[name="madeForKids"]');
+const savedKids = localStorage.getItem('shortreel_madeForKids');
+if (savedKids) {
+  const target = document.querySelector(`input[name="madeForKids"][value="${savedKids}"]`);
+  if (target) target.checked = true;
+}
+kidsRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    if (radio.checked) localStorage.setItem('shortreel_madeForKids', radio.value);
+  });
+});
+</script>
+</body>
+</html>

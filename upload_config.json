@@ -1,0 +1,19 @@
+{
+  "video_path": "C:/Users/ASMIT/Downloads/18171907-uhd_2160_3840_60fps.mp4",
+  "platforms": {
+    "youtube": true,
+    "instagram": true
+  },
+  "youtube": {
+    "title": "hii",
+    "description": "hiiiiii",
+    "playlist": "valorant",
+    "visibility": "UNLISTED",
+    "made_for_kids": false,
+    "tags": "gg,jjlucknow",
+    "location": "bijnor"
+  },
+  "instagram": {
+    "caption": "hiiii #we"
+  }
+}
