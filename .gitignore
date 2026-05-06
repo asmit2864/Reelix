@@ -1,1 +1,4 @@
-browser_profile
+browser_profile/
+upload_config.json
+__pycache__/
+*.pyc
